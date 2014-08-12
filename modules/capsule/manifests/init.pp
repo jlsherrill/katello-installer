@@ -9,6 +9,8 @@
 # $pulp::                           should Pulp be configured on the node
 #                                   type:boolean
 #
+# $pulp_master::                    whether the capsule should be identified as a pulp master server
+#
 # $pulp_admin_password::            passowrd for the Pulp admin user.It should be left blank so that random password is generated
 #
 # $pulp_oauth_effective_user::      User to be used for Pulp REST interaction
@@ -81,6 +83,7 @@ class capsule (
   $parent_fqdn                   = $capsule::params::parent_fqdn,
   $certs_tar                     = $capsule::params::certs_tar,
   $pulp                          = $capsule::params::pulp,
+  $pulp_master                   = $capsule::params::pulp_master,
   $pulp_admin_password           = $capsule::params::pulp_admin_password,
   $pulp_oauth_effective_user     = $capsule::params::pulp_oauth_effective_user,
   $pulp_oauth_key                = $capsule::params::pulp_oauth_key,
@@ -120,7 +123,12 @@ class capsule (
 
   validate_present($capsule::parent_fqdn)
 
+  if $pulp_master {
+    class { 'foreman_proxy::plugin::pulp': }
+  }
+
   if $pulp {
+    class {'foreman_proxy::plugin::pulpnode': }
     validate_pulp($pulp)
     validate_present($pulp_oauth_secret)
   }
